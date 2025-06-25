@@ -1,666 +1,248 @@
-<!DOCTYPE html>
-<html lang="id">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Random Name Picker</title>
-    <style>
-        :root {
-            --primary-color: #4a6fa5;
-            --secondary-color: #6b8cbc;
-            --accent-color: #ff6b6b;
-            --background: #f5f7fa;
-            --card-bg: #ffffff;
-            --text-color: #333333;
-            --light-text: #777777;
-            --border-color: #e0e0e0;
-        }
-        
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-        
-        body {
-            background-color: var(--background);
-            color: var(--text-color);
-            line-height: 1.6;
-            padding: 20px;
-        }
-        
-        .container {
-            max-width: 800px;
-            margin: 0 auto;
-            background-color: var(--card-bg);
-            border-radius: 10px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
-            padding: 25px;
-        }
-        
-        header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 25px;
-            padding-bottom: 15px;
-            border-bottom: 1px solid var(--border-color);
-        }
-        
-        h1 {
-            color: var(--primary-color);
-            font-size: 24px;
-        }
-        
-        .stats {
-            display: flex;
-            gap: 20px;
-            font-size: 16px;
-        }
-        
-        .stat-item {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        
-        .stat-icon {
-            width: 20px;
-            height: 20px;
-            fill: var(--primary-color);
-        }
-        
-        .settings {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
-            margin-bottom: 25px;
-        }
-        
-        .setting-group {
-            display: flex;
-            flex-direction: column;
-        }
-        
-        label {
-            font-weight: 600;
-            margin-bottom: 8px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        
-        .label-icon {
-            width: 18px;
-            height: 18px;
-            fill: var(--primary-color);
-        }
-        
-        input, select, textarea {
-            width: 100%;
-            padding: 12px;
-            border: 1px solid var(--border-color);
-            border-radius: 6px;
-            font-size: 16px;
-            transition: border-color 0.3s, box-shadow 0.3s;
-        }
-        
-        input:focus, select:focus, textarea:focus {
-            outline: none;
-            border-color: var(--primary-color);
-            box-shadow: 0 0 0 3px rgba(74, 111, 165, 0.2);
-        }
-        
-        textarea {
-            min-height: 120px;
-            resize: vertical;
-        }
-        
-        .buttons {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
-            gap: 12px;
-            margin-bottom: 25px;
-        }
-        
-        button {
-            padding: 12px 15px;
-            background-color: var(--primary-color);
-            color: white;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 16px;
-            font-weight: 500;
-            transition: background-color 0.3s, transform 0.2s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-        }
-        
-        button:hover {
-            background-color: var(--secondary-color);
-            transform: translateY(-2px);
-        }
-        
-        button:active {
-            transform: translateY(0);
-        }
-        
-        .btn-icon {
-            width: 18px;
-            height: 18px;
-            fill: white;
-        }
-        
-        .btn-pick {
-            width: 100%;
-            padding: 16px;
-            font-size: 18px;
-            background-color: var(--accent-color);
-            margin: 20px 0;
-        }
-        
-        .btn-pick:hover {
-            background-color: #ff5252;
-        }
-        
-        .results {
-            background-color: var(--card-bg);
-            border-radius: 8px;
-            padding: 20px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-        }
-        
-        .results-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
-        }
-        
-        .results-header h2 {
-            color: var(--primary-color);
-            font-size: 20px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        
-        .results-icon {
-            width: 24px;
-            height: 24px;
-            fill: var(--primary-color);
-        }
-        
-        .search-box {
-            position: relative;
-            margin-bottom: 15px;
-        }
-        
-        .search-icon {
-            position: absolute;
-            left: 12px;
-            top: 50%;
-            transform: translateY(-50%);
-            width: 18px;
-            height: 18px;
-            fill: var(--light-text);
-        }
-        
-        #searchInput {
-            padding-left: 40px;
-        }
-        
-        #selectedList {
-            list-style: none;
-            max-height: 300px;
-            overflow-y: auto;
-            padding: 10px 0;
-        }
-        
-        #selectedList li {
-            padding: 10px 15px;
-            border-bottom: 1px solid var(--border-color);
-            transition: background-color 0.2s;
-        }
-        
-        #selectedList li:last-child {
-            border-bottom: none;
-        }
-        
-        #selectedList li:hover {
-            background-color: rgba(107, 140, 188, 0.08);
-        }
-        
-        .pagination {
-            display: flex;
-            justify-content: center;
-            gap: 8px;
-            margin-top: 15px;
-        }
-        
-        .pagination button {
-            min-width: 40px;
-            min-height: 40px;
-            padding: 8px;
-        }
-        
-        .message {
-            position: fixed;
-            bottom: 20px;
-            left: 20px;
-            padding: 15px 20px;
-            border-radius: 8px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
-            z-index: 1000;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            opacity: 0;
-            transform: translateY(20px);
-            transition: opacity 0.3s, transform 0.3s;
-            background-color: #4a6fa5;
-            color: white;
-        }
-        
-        .message.show {
-            opacity: 1;
-            transform: translateY(0);
-        }
-        
-        .message.error {
-            background-color: #ff5252;
-        }
-        
-        .message.warning {
-            background-color: #ffa502;
-        }
-        
-        .message.success {
-            background-color: #2ed573;
-        }
-        
-        @media (max-width: 600px) {
-            .settings {
-                grid-template-columns: 1fr;
-            }
-            
-            .buttons {
-                grid-template-columns: repeat(2, 1fr);
-            }
-            
-            .stat-item {
-                font-size: 14px;
-            }
-            
-            header {
-                flex-direction: column;
-                gap: 15px;
-                align-items: flex-start;
-            }
-        }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <header>
-            <h1>Random Name Picker</h1>
-            <div class="stats">
-                <div class="stat-item">
-                    <svg class="stat-icon" viewBox="0 0 24 24">
-                        <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14zM7 10h2v7H7zm4-3h2v10h-2zm4 6h2v4h-2z"/>
-                    </svg>
-                    Total: <span id="totalNama">0</span>
-                </div>
-                <div class="stat-item">
-                    <svg class="stat-icon" viewBox="0 0 24 24">
-                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm1-13h-2v6h2V7zm0 8h-2v2h2v-2z"/>
-                    </svg>
-                    Selected: <span id="totalPemenang">0</span>
-                </div>
-            </div>
-        </header>
-        
-        <div class="settings">
-            <div class="setting-group">
-                <label for="jumlahPemenang">
-                    <svg class="label-icon" viewBox="0 0 24 24">
-                        <path d="M19 5h-2V3H7v2H5c-1.1 0-2 .9-2 2v1c0 2.55 1.92 4.63 4.39 4.94.63 1.5 1.98 2.63 3.61 2.96V19H7v2h10v-2h-4v-3.1c1.63-.33 2.98-1.46 3.61-2.96C19.08 12.63 21 10.55 21 8V7c0-1.1-.9-2-2-2zM5 8V7h2v3.82C5.84 10.4 5 9.3 5 8zm14 0c0 1.3-.84 2.4-2 2.82V7h2v1z"/>
-                    </svg>
-                    Winners:
-                </label>
-                <input type="number" id="jumlahPemenang" min="1" max="10" value="1">
-            </div>
-            
-            <div class="setting-group">
-                <label for="metodePisahNama">
-                    <svg class="label-icon" viewBox="0 0 24 24">
-                        <path d="M3 17v2h6v-2H3zM3 5v2h10V5H3zm10 16v-2h8v-2h-8v-2h-2v6h2zM7 9v2H3v2h4v2h2V9H7zm14 4v-2H11v2h10zm-6-4h2V7h4V5h-4V3h-2v6z"/>
-                    </svg>
-                    Separator:
-                </label>
-                <select id="metodePisahNama">
-                    <option value="newline">New Line</option>
-                    <option value="comma">Comma (,)</option>
-                    <option value="semicolon">Semicolon (;)</option>
-                </select>
-            </div>
-        </div>
-        
-        <div class="setting-group">
-            <label for="inputNama">
-                <svg class="label-icon" viewBox="0 0 24 24">
-                    <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
-                </svg>
-                Enter names:
-            </label>
-            <textarea id="inputNama" placeholder="Separate names by new lines, commas, or semicolons"></textarea>
-        </div>
-        
-        <div class="buttons">
-            <button onclick="setDaftarNama()">
-                <svg class="btn-icon" viewBox="0 0 24 24">
-                    <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14zM7 10h2v7H7zm4-3h2v10h-2zm4 6h2v4h-2z"/>
-                </svg>
-                Set List
-            </button>
-            <button onclick="acakUlangDaftarNama()">
-                <svg class="btn-icon" viewBox="0 0 24 24">
-                    <path d="M10.59 9.17L5.41 4 4 5.41l5.17 5.17 1.42-1.41zM14.5 4l2.04 2.04L4 18.59 5.41 20 17.96 7.46 20 9.5V4h-5.5zm.33 9.41l-1.41 1.41 3.13 3.13L14.5 20H20v-5.5l-2.04 2.04-3.13-3.13z"/>
-                </svg>
-                Shuffle
-            </button>
-            <button onclick="resetDaftarNama()">
-                <svg class="btn-icon" viewBox="0 0 24 24">
-                    <path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/>
-                </svg>
-                Reset
-            </button>
-            <button onclick="clearAllData()">
-                <svg class="btn-icon" viewBox="0 0 24 24">
-                    <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
-                </svg>
-                Clear Data
-            </button>
-            <button onclick="exportDaftarNama()">
-                <svg class="btn-icon" viewBox="0 0 24 24">
-                    <path d="M19 12v7H5v-7H3v7c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2v-7h-2zm-6 .67l2.59-2.58L17 11.5l-5 5-5-5 1.41-1.41L11 12.67V3h2v9.67z"/>
-                </svg>
-                Export
-            </button>
-            <button onclick="document.getElementById('importFile').click()">
-                <svg class="btn-icon" viewBox="0 0 24 24">
-                    <path d="M9 16h6v-6h4l-7-7-7 7h4v6zm3-10.17L14.17 8H13v6h-2V8H9.83L12 5.83zM5 18h14v2H5z"/>
-                </svg>
-                Import
-            </button>
-        </div>
-        
-        <input type="file" id="importFile" style="display: none;" onchange="importDaftarNama(event)">
-        
-        <button class="btn-pick" onclick="pilihNamaAcak()">
-            <svg class="btn-icon" viewBox="0 0 24 24" width="24" height="24">
-                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm1-13h-2v6h2V7zm0 8h-2v2h2v-2z"/>
-            </svg>
-            Pick Random Name
-        </button>
-        
-        <div class="results">
-            <div class="results-header">
-                <h2>
-                    <svg class="results-icon" viewBox="0 0 24 24">
-                        <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14zM7 10h2v7H7zm4-3h2v10h-2zm4 6h2v4h-2z"/>
-                    </svg>
-                    Selected Names
-                </h2>
-            </div>
-            
-            <div class="search-box">
-                <svg class="search-icon" viewBox="0 0 24 24">
-                    <path d="M15.5 14h-.79l-.28-.27a6.5 6.5 0 0 0 1.48-5.34c-.47-2.78-2.79-5-5.59-5.34a6.505 6.505 0 0 0-7.27 7.27c.34 2.8 2.56 5.12 5.34 5.59a6.5 6.5 0 0 0 5.34-1.48l.27.28v.79l4.25 4.25c.41.41 1.08.41 1.49 0 .41-.41.41-1.08 0-1.49L15.5 14zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
-                </svg>
-                <input type="text" id="searchInput" placeholder="Search names..." oninput="searchNames()">
-            </div>
-            
-            <ul id="selectedList"></ul>
-            
-            <div class="pagination" id="paginationContainer"></div>
-        </div>
-        
-        <div id="messageArea" class="message"></div>
+<!-- Improved Minimalist Random Name Picker (No Overlay, In-place Animation, True Random, Numbered Winners) -->
+<style>
+:root {
+  --accent: #2dbe60;
+  --bg: #f7fafb;
+  --panel: #fff;
+  --radius: 9px;
+  --shadow: 0 2px 8px rgba(0,0,0,0.09);
+  --primary: #181e22;
+}
+body { background: var(--bg); color: var(--primary); font-family: 'Segoe UI',Arial,sans-serif; }
+.rnp-wrap { max-width: 370px; margin: 36px auto 0; background: var(--panel); border-radius: var(--radius); box-shadow: var(--shadow); padding: 22px 16px 18px; }
+.rnp-hd { font-size: 1.22rem; font-weight: 700; margin-bottom: 8px; text-align: center; }
+.rnp-cfg { display: flex; gap: 6px; margin-bottom: 7px; }
+.rnp-cfg > div { flex:1; }
+.rnp-cfg label { display:block; font-size:12px; color: #666; margin-bottom:2px; }
+.rnp-cfg input, .rnp-cfg select { width:100%; padding:5px 6px; border-radius:5px; border:1px solid #e0e0e0; }
+.rnp-ta { width:100%; min-height:60px; resize:vertical; border-radius:6px; border:1px solid #ececec; background:#f8fafc; font-size:14px; padding:7px; margin-bottom:9px; }
+.rnp-btnbar { display:flex; gap:6px; margin-bottom:9px; }
+.rnp-btnbar button, .rnp-big { flex:1 1 0; background:var(--accent); color:#fff; border:none; border-radius:6px; padding:8px 0; font-size:14px; font-weight:600; cursor:pointer; transition:background .16s; }
+.rnp-btnbar button.rnp-outline { background:#fff; color:var(--accent); border:1px solid var(--accent); }
+.rnp-btnbar button.rnp-outline:hover { background:#e9faef; }
+.rnp-btnbar button.rnp-clear { background:none; color:#d22; border:none; }
+.rnp-big { width:100%; margin-bottom:13px; font-size:17px; }
+.rnp-stat { display:flex; gap:7px; justify-content:center; font-size:13px; margin-bottom:7px; }
+.rnp-stat div { background:#f0f9f2; border-radius:5px; padding:2px 11px; }
+.rnp-results h3 { font-size:15px; margin:0 0 7px; }
+.rnp-results ul { padding:0; margin:0; list-style:none; }
+.rnp-results li { background:#f4f5fa; margin-bottom:2px; border-radius:4px; padding:5px 10px; font-size:14px; animation:fadeIn .44s; }
+.rnp-results li.rnp-new { background: #d7ffe1; animation: winnerFlash 1.1s; font-weight: 600; }
+.rnp-search { width:100%; padding:6px 8px; border:1px solid #ececec; border-radius:5px; font-size:14px; margin-bottom:6px; }
+.rnp-msg { text-align:center; background:var(--accent); color:#fff; border-radius:5px; font-size:13px; padding:7px 0; margin-bottom:8px; opacity:1; transition:opacity .22s; }
+.rnp-msg.hide { opacity:0; pointer-events:none; }
+.rnp-winner-anim { background: #f3fff7; border-radius:7px; text-align: center; margin: 13px 0 12px; padding: 11px 8px; min-height: 35px; font-size:1.25rem; color: var(--accent); font-weight: 600; letter-spacing: .5px; transition: background .18s;}
+.rnp-winner-anim:empty { display:none; }
+.rnp-winner-list { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 3px; }
+.rnp-winner-list li { font-size: 1.11rem; background: none; color: var(--accent); font-weight: 600; text-align: left; display: flex; gap: 8px; align-items: center;}
+.rnp-winner-list li.rnp-new { animation: winnerFlash 1s; }
+.rnp-dot-loader { display:inline-block; vertical-align:middle; margin-right:7px; }
+.rnp-dot-loader span { display:inline-block; width:7px; height:7px; border-radius:50%; background:var(--accent); opacity:.3; animation:dotPulse 1s infinite; margin:0 1.5px;}
+.rnp-dot-loader span:nth-child(2) { animation-delay:.2s;}
+.rnp-dot-loader span:nth-child(3) { animation-delay:.4s;}
+@keyframes dotPulse { 0%,100%{opacity:.3;} 50%{opacity:1;} }
+@keyframes winnerFlash { 0%{background: #d7ffe1;} 50%{background: #fff;} 100%{background: #d7ffe1;} }
+@keyframes fadeIn { from { opacity:0; transform:translateY(24px);} to{ opacity:1; transform: none;} }
+@media (max-width: 420px) {.rnp-wrap{padding:13px 4vw 11px;}}
+</style>
+
+<div class="rnp-wrap">
+  <div class="rnp-hd">Random Name Picker</div>
+  <div class="rnp-cfg">
+    <div>
+      <label>Winners</label>
+      <input id="rnp-winners" type="number" min="1" max="10" value="1">
     </div>
-    
-    <script>
-        // -----------------------
-        // Global Variables
-        // -----------------------
-        let daftarNamaAwal = [];
-        let daftarNama = [];
-        let namaTerpilihSebelumnya = [];
-        const namaPerHalaman = 10;
-        let currentPage = 1;
-        let messageTimeout;
+    <div>
+      <label>Separator</label>
+      <select id="rnp-sep" onchange="rnpUpdatePlaceholder()">
+        <option value="newline">New Line</option>
+        <option value="comma">Comma (,)</option>
+        <option value="semicolon">Semicolon (;)</option>
+      </select>
+    </div>
+    <div>
+      <label>Shuffle(s)</label>
+      <input id="rnp-dur" type="number" min="1" max="6" value="2">
+    </div>
+  </div>
+  <textarea class="rnp-ta" id="rnp-input" placeholder="John Doe&#10;Jane Smith"></textarea>
+  <div class="rnp-btnbar">
+    <button onclick="rnpSetNames()">Set</button>
+    <button onclick="rnpShuffleNames()" class="rnp-outline">Shuffle</button>
+    <button onclick="rnpResetNames()" class="rnp-outline">Reset</button>
+    <button onclick="rnpExportNames()" class="rnp-outline">Export</button>
+    <button onclick="document.getElementById('rnp-import').click()" class="rnp-outline">Import</button>
+    <button onclick="rnpClearAll()" class="rnp-clear" title="Clear All">✕</button>
+    <input type="file" id="rnp-import" accept=".txt" style="display:none" onchange="rnpImportNames(event)">
+  </div>
+  <div id="rnp-winner-anim" class="rnp-winner-anim"></div>
+  <button class="rnp-big" id="rnp-pick-btn" onclick="rnpPickName()">Pick Random Name</button>
+  <div class="rnp-stat">
+    <div>Total: <span id="rnp-total">0</span></div>
+    <div>Selected: <span id="rnp-selected">0</span></div>
+  </div>
+  <div class="rnp-results">
+    <h3>Selected Names:</h3>
+    <input class="rnp-search" id="rnp-search" placeholder="Cari nama..." oninput="rnpSearchNames()">
+    <ul id="rnp-result-list"></ul>
+  </div>
+  <div id="rnp-msg" class="rnp-msg" style="display:none"></div>
+</div>
 
-        // -----------------------
-        // Utility Functions
-        // -----------------------
-        function showMessage(message, type = 'success') {
-            const messageArea = document.getElementById('messageArea');
-            messageArea.textContent = message;
-            messageArea.className = `message ${type}`;
-            messageArea.classList.add('show');
-            
-            if (messageTimeout) clearTimeout(messageTimeout);
-            messageTimeout = setTimeout(() => {
-                messageArea.classList.remove('show');
-            }, 3000);
-        }
+<script>
+let rnpNames = [], rnpNamesOrig = [], rnpWinners = [], rnpLastWinner = [];
+let rnpMsgTimeout, rnpRolling = false, rnpLoading = null;
 
-        // -----------------------
-        // UI Update Functions
-        // -----------------------
-        function perbaruiHasil() {
-            document.getElementById('totalNama').textContent = daftarNamaAwal.length;
-            document.getElementById('totalPemenang').textContent = namaTerpilihSebelumnya.length;
-            renderNamaTerpilihPage(currentPage);
-        }
+function rnpUpdatePlaceholder() {
+  let sep = document.getElementById('rnp-sep').value, t = document.getElementById('rnp-input');
+  t.placeholder = sep==="comma"?"John, Jane, Bob":sep==="semicolon"?"John; Jane; Bob":"John\nJane\nBob";
+}
+function rnpSetNames() {
+  let v = document.getElementById('rnp-input').value, sep = document.getElementById('rnp-sep').value,
+    s = sep==="comma"?",":sep==="semicolon"?";":"\n";
+  let arr = v.split(s).map(x=>x.trim()).filter(Boolean);
+  if(!arr.length) return rnpMsg('No valid names!','error');
+  let dups = arr.filter((x,i,a)=>a.indexOf(x)!==i), set = [...new Set(arr)];
+  if(dups.length) rnpMsg('Duplicate: '+[...new Set(dups)].join(', '),'warning');
+  rnpNamesOrig = set; rnpNames = [...set]; rnpWinners = [];
+  localStorage.setItem('rnpNames',JSON.stringify(set));
+  rnpUpdate();
+  rnpMsg('Name list updated!','success');
+  rnpShowWinnerAnim([]);
+}
+function rnpResetNames() {
+  rnpNames = [...rnpNamesOrig]; rnpWinners = [];
+  rnpUpdate(); rnpMsg('Reset!','success');
+  rnpShowWinnerAnim([]);
+}
+function rnpShuffleNames() {
+  rnpNames = [...rnpNamesOrig].sort(()=>Math.random()-.5);
+  document.getElementById('rnp-input').value = rnpNames.join('\n');
+  rnpMsg('Shuffled!','success');
+}
+function rnpExportNames() {
+  if(!rnpNamesOrig.length) return rnpMsg('No names to export!','error');
+  let sep = document.getElementById('rnp-sep').value, s = sep==="comma"?",":sep==="semicolon"?";":"\n";
+  let blob = new Blob([rnpNamesOrig.join(s)],{type:'text/plain'}), url = URL.createObjectURL(blob);
+  let a = document.createElement('a'); a.href = url; a.download = "names.txt"; a.click(); URL.revokeObjectURL(url);
+}
+function rnpImportNames(e) {
+  let f = e.target.files[0]; if(!f) return;
+  if(f.type!=='text/plain') return rnpMsg('Please upload .txt','error');
+  let r = new FileReader();
+  r.onload = function(ev){
+    document.getElementById('rnp-input').value = ev.target.result;
+    rnpSetNames();
+  }; r.readAsText(f);
+}
+function rnpClearAll() {
+  if(confirm('Clear all data?')) {
+    localStorage.clear();
+    rnpNamesOrig=[], rnpNames=[], rnpWinners=[];
+    document.getElementById('rnp-input').value=''; document.getElementById('rnp-sep').value='newline'; document.getElementById('rnp-winners').value=1;
+    rnpUpdatePlaceholder();
+    rnpUpdate();
+    rnpMsg('All cleared!','success');
+    rnpShowWinnerAnim([]);
+  }
+}
+function rnpMsg(txt, type) {
+  let m = document.getElementById('rnp-msg');
+  m.textContent = txt; m.style.display = 'block'; m.className = 'rnp-msg'; m.classList.add(type||'success');
+  if(rnpMsgTimeout) clearTimeout(rnpMsgTimeout);
+  rnpMsgTimeout = setTimeout(()=>{ m.classList.add('hide'); setTimeout(()=>m.style.display='none',300); }, 2100);
+}
+function rnpUpdate() {
+  document.getElementById('rnp-total').textContent = rnpNamesOrig.length;
+  document.getElementById('rnp-selected').textContent = rnpWinners.length;
+  rnpRenderWinners();
+}
+function rnpRenderWinners(searchTerm='') {
+  let ul = document.getElementById('rnp-result-list');
+  let arr = searchTerm ? rnpWinners.filter(n=>n.toLowerCase().includes(searchTerm.toLowerCase())) : rnpWinners;
+  ul.innerHTML = arr.map((n,i)=>{
+    let isNew = rnpLastWinner.includes(n);
+    return `<li${isNew ? ' class="rnp-new"' : ''}>${i+1}. <span>${n}</span></li>`;
+  }).join('');
+}
+function rnpSearchNames() {
+  let q = document.getElementById('rnp-search').value || '';
+  rnpRenderWinners(q);
+}
+function rnpPickName() {
+  if(rnpRolling) return; // Prevent double rolling
+  let n = parseInt(document.getElementById('rnp-winners').value);
+  if(!rnpNames.length) return rnpMsg('No names!','error');
+  if(n>rnpNames.length) return rnpMsg('Not enough names!','error');
+  rnpRunAnim(n);
+}
 
-        function renderNamaTerpilihPage(page) {
-            const start = (page - 1) * namaPerHalaman;
-            const end = start + namaPerHalaman;
-            const currentNames = namaTerpilihSebelumnya.slice(start, end);
-            
-            const namaTerpilihList = document.getElementById('selectedList');
-            namaTerpilihList.innerHTML = currentNames
-                .map((name, index) => `<li data-index="${start + index + 1}">${name}</li>`)
-                .join('');
-            
-            setupPagination();
-        }
+// Fisher-Yates for true randomness
+function rnpSample(arr, k){
+  let arrCopy = arr.slice();
+  for (let i = arrCopy.length - 1; i > 0; i--) {
+    let j = Math.floor(Math.random() * (i + 1));
+    [arrCopy[i], arrCopy[j]] = [arrCopy[j], arrCopy[i]];
+  }
+  return arrCopy.slice(0, k);
+}
 
-        function setupPagination() {
-            const totalPages = Math.ceil(namaTerpilihSebelumnya.length / namaPerHalaman);
-            const paginationContainer = document.getElementById('paginationContainer');
-            paginationContainer.innerHTML = '';
-            
-            for (let i = 1; i <= totalPages; i++) {
-                const button = document.createElement('button');
-                button.textContent = i;
-                button.onclick = () => {
-                    currentPage = i;
-                    renderNamaTerpilihPage(i);
-                };
-                paginationContainer.appendChild(button);
-            }
-        }
-
-        function searchNames() {
-            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
-            const filteredNames = namaTerpilihSebelumnya.filter(name => 
-                name.toLowerCase().includes(searchTerm)
-            );
-            
-            const namaTerpilihList = document.getElementById('selectedList');
-            namaTerpilihList.innerHTML = filteredNames.map(name => `<li>${name}</li>`).join('');
-        }
-
-        // -----------------------
-        // Data Management Functions
-        // -----------------------
-        function setDaftarNama() {
-            const input = document.getElementById('inputNama').value;
-            const metodePisah = document.getElementById('metodePisahNama').value;
-            const separator = metodePisah === 'comma' ? ',' : 
-                             metodePisah === 'semicolon' ? ';' : '\n';
-            
-            const names = input
-                .split(separator)
-                .map(name => name.trim())
-                .filter(name => name !== '');
-            
-            if (names.length === 0) {
-                showMessage('No valid names found!', 'error');
-                return;
-            }
-            
-            // Cek duplikat
-            const duplicates = names.filter((name, index) => names.indexOf(name) !== index);
-            if (duplicates.length > 0) {
-                showMessage(`Duplicate names found: ${duplicates.join(', ')}`, 'warning');
-            }
-            
-            daftarNamaAwal = [...new Set(names)]; // Hapus duplikat
-            daftarNama = [...daftarNamaAwal];
-            localStorage.setItem('daftarNama', JSON.stringify(daftarNamaAwal));
-            perbaruiHasil();
-            showMessage('Name list has been updated!', 'success');
-        }
-
-        function resetDaftarNama() {
-            daftarNama = [...daftarNamaAwal];
-            namaTerpilihSebelumnya = [];
-            perbaruiHasil();
-            showMessage('Name list has been reset!', 'success');
-        }
-
-        function importDaftarNama(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-            
-            if (file.type !== 'text/plain') {
-                showMessage('Please upload a .txt file!', 'error');
-                return;
-            }
-            
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                const content = e.target.result;
-                if (!validateNames(content)) return;
-                document.getElementById('inputNama').value = content;
-                setDaftarNama();
-            };
-            reader.readAsText(file);
-        }
-
-        function validateNames(names) {
-            if (!names || names.trim() === "") {
-                showMessage('Input names cannot be empty!', 'error');
-                return false;
-            }
-            return true;
-        }
-
-        function acakUlangDaftarNama() {
-            daftarNama = [...daftarNamaAwal].sort(() => Math.random() - 0.5);
-            const textarea = document.getElementById('inputNama');
-            textarea.value = daftarNama.join('\n');
-            showMessage('Name list has been shuffled!', 'success');
-        }
-
-        function exportDaftarNama() {
-            if (daftarNamaAwal.length === 0) {
-                showMessage('No names to export!', 'error');
-                return;
-            }
-            
-            const metodePisah = document.getElementById('metodePisahNama').value;
-            const separator = metodePisah === 'comma' ? ',' : 
-                             metodePisah === 'semicolon' ? ';' : '\n';
-            const content = daftarNamaAwal.join(separator);
-            
-            const blob = new Blob([content], { type: 'text/plain' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = 'names.txt';
-            a.click();
-            URL.revokeObjectURL(url);
-        }
-
-        function clearAllData() {
-            if (confirm('Are you sure you want to clear all data? This action cannot be undone.')) {
-                localStorage.clear();
-                daftarNamaAwal = [];
-                daftarNama = [];
-                namaTerpilihSebelumnya = [];
-                document.getElementById('inputNama').value = '';
-                document.getElementById('metodePisahNama').value = 'newline';
-                document.getElementById('jumlahPemenang').value = '1';
-                perbaruiHasil();
-                showMessage('All data has been cleared!', 'success');
-            }
-        }
-
-        // -----------------------
-        // Name Selection Functions
-        // -----------------------
-        function pilihNamaAcak() {
-            const jumlahPemenang = parseInt(document.getElementById('jumlahPemenang').value);
-            
-            if (daftarNama.length === 0) {
-                showMessage('No names available!', 'error');
-                return;
-            }
-            
-            if (jumlahPemenang > daftarNama.length) {
-                showMessage('Not enough names available!', 'error');
-                return;
-            }
-            
-            let pemenang = [];
-            for (let i = 0; i < jumlahPemenang; i++) {
-                let indeksAcak = Math.floor(Math.random() * daftarNama.length);
-                pemenang.push(daftarNama.splice(indeksAcak, 1)[0]);
-            }
-            
-            namaTerpilihSebelumnya.push(...pemenang);
-            perbaruiHasil();
-            showMessage(`${jumlahPemenang} winner${jumlahPemenang > 1 ? 's' : ''} selected!`, 'success');
-        }
-
-        // -----------------------
-        // Initialization
-        // -----------------------
-        window.onload = function() {
-            const savedNames = localStorage.getItem('daftarNama');
-            if (savedNames) {
-                daftarNamaAwal = JSON.parse(savedNames);
-                document.getElementById('inputNama').value = daftarNamaAwal.join('\n');
-                daftarNama = [...daftarNamaAwal];
-                perbaruiHasil();
-            }
-        };
-
-        // Space key to pick names
-        document.addEventListener('keydown', function(event) {
-            if (event.code === 'Space') {
-                event.preventDefault();
-                pilihNamaAcak();
-            }
-        });
-    </script>
-</body>
-</html>
+function rnpRunAnim(count) {
+  let animBox = document.getElementById('rnp-winner-anim');
+  let duration = Math.max(1,Math.min(6,parseInt(document.getElementById('rnp-dur').value)||2));
+  let ticks = Math.ceil(duration*1000/90), tick=0;
+  let pool = rnpNamesOrig;
+  rnpRolling = true;
+  rnpShowWinnerAnim('rolling');
+  if(rnpLoading) clearInterval(rnpLoading);
+  rnpLoading = setInterval(()=>{
+    let loader = `<span class="rnp-dot-loader"><span></span><span></span><span></span></span>`;
+    let randNames = rnpSample(pool, count);
+    let nameList = randNames.map((n,i)=> `<li>${i+1}. ${n}</li>`).join('');
+    animBox.innerHTML = loader + `<ul class="rnp-winner-list">${nameList}</ul>`;
+    tick++;
+    if(tick>=ticks) {
+      clearInterval(rnpLoading);
+      // True random draw, remove from pool
+      let draw = rnpSample(rnpNames, count);
+      draw.forEach(n => rnpNames.splice(rnpNames.indexOf(n),1));
+      rnpWinners.push(...draw);
+      rnpLastWinner = draw;
+      // Display winner(s)
+      let winnerList = draw.map((n,i)=> `<li class="rnp-new">${i+1}. ${n}</li>`).join('');
+      animBox.innerHTML = `<ul class="rnp-winner-list">${winnerList}</ul>`;
+      rnpRolling = false;
+      rnpUpdate();
+      setTimeout(()=>{ rnpLastWinner=[]; rnpRenderWinners(); }, 1100);
+    }
+  }, 90);
+}
+function rnpShowWinnerAnim(val){
+  let box = document.getElementById('rnp-winner-anim');
+  if(val==='rolling'){
+    box.innerHTML = `<span class="rnp-dot-loader"><span></span><span></span><span></span></span>`;
+  } else if(Array.isArray(val) && val.length) {
+    // last winner(s)
+    let winnerList = val.map((n,i)=> `<li>${i+1}. ${n}</li>`).join('');
+    box.innerHTML = `<ul class="rnp-winner-list">${winnerList}</ul>`;
+  } else {
+    box.innerHTML = '';
+  }
+}
+document.addEventListener('keydown', function(e){
+  if (e.code === 'Space' && !document.activeElement.matches('input,textarea')) {
+    e.preventDefault(); rnpPickName();
+  }
+});
+window.onload = function() {
+  let saved = localStorage.getItem('rnpNames');
+  if(saved) {
+    rnpNamesOrig = JSON.parse(saved);
+    document.getElementById('rnp-input').value = rnpNamesOrig.join('\n');
+    rnpResetNames();
+  }
+  rnpUpdatePlaceholder();
+  rnpShowWinnerAnim([]);
+};
+</script>
