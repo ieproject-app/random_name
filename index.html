@@ -1,4 +1,4 @@
-<!-- Minimalist Random Name Picker (Optimized Animation & Winner Reveal) -->
+<!-- Minimalist Random Name Picker with Dot Loader Animation (Winner Stays Until Next Pick) -->
 <style>
 :root {
   --accent: #2dbe60;
@@ -22,7 +22,6 @@ body { background: var(--bg); color: var(--primary); font-family: 'Segoe UI',Ari
 .rnp-btnbar button.rnp-outline:hover { background:#e9faef; }
 .rnp-btnbar button.rnp-clear { background:none; color:#d22; border:none; }
 .rnp-big { width:100%; margin-bottom:13px; font-size:17px; }
-.rnp-status { font-size:13px; color:#777; text-align:center; margin-bottom:5px; }
 .rnp-stat { display:flex; gap:7px; justify-content:center; font-size:13px; margin-bottom:7px; }
 .rnp-stat div { background:#f0f9f2; border-radius:5px; padding:2px 11px; }
 .rnp-results h3 { font-size:15px; margin:0 0 7px; }
@@ -32,14 +31,21 @@ body { background: var(--bg); color: var(--primary); font-family: 'Segoe UI',Ari
 .rnp-search { width:100%; padding:6px 8px; border:1px solid #ececec; border-radius:5px; font-size:14px; margin-bottom:6px; }
 .rnp-msg { text-align:center; background:var(--accent); color:#fff; border-radius:5px; font-size:13px; padding:7px 0; margin-bottom:8px; opacity:1; transition:opacity .22s; }
 .rnp-msg.hide { opacity:0; pointer-events:none; }
-.rnp-overlay { position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(30,60,40,0.07); z-index:2; display:none; align-items:center; justify-content:center; }
-.rnp-overlay.active { display:flex; }
-.rnp-anim { min-width:170px; min-height:48px; font-size:2.1rem; font-weight:700; color:var(--accent); background:#fff; border-radius:var(--radius); box-shadow:var(--shadow); display:flex; align-items:center; justify-content:center; padding:22px 0; animation:popAnim .7s infinite alternate; }
-.rnp-winner { text-align:center; font-size:1.2rem; margin:0 0 13px; font-weight:600; color:var(--accent); letter-spacing:.5px;}
-@keyframes popAnim { 0%,100% { transform: scale(1); } 40% { transform: scale(1.08);} 65% { transform: scale(.96);} }
+.rnp-winner-sticky { background: #f3fff7; border-radius:7px; text-align: center; margin: 13px 0 12px; padding: 11px 8px; font-size:1.22rem; color: var(--accent); font-weight: 600; letter-spacing: .5px; transition: background .18s;}
+.rnp-winner-sticky:empty { display:none; }
+.rnp-dot-loader { display:flex; justify-content:center; align-items:center; gap:3px; margin-bottom: 7px; height: 14px;}
+.rnp-dot-loader span { display:inline-block; width:6px; height:6px; border-radius:50%; background:var(--accent); opacity:.3; animation:dotPulse 1s infinite; }
+.rnp-dot-loader span:nth-child(2) { animation-delay:.2s;}
+.rnp-dot-loader span:nth-child(3) { animation-delay:.4s;}
+@keyframes dotPulse { 0%,100%{opacity:.3;} 50%{opacity:1;} }
 @keyframes winnerFlash { 0%{background: #d7ffe1;} 50%{background: #fff;} 100%{background: #d7ffe1;} }
 @keyframes fadeIn { from { opacity:0; transform:translateY(24px);} to{ opacity:1; transform: none;} }
 @media (max-width: 420px) {.rnp-wrap{padding:13px 4vw 11px;}}
+/* Overlay */
+.rnp-overlay { position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(30,60,40,0.10); z-index:2; display:none; align-items:center; justify-content:center; }
+.rnp-overlay.active { display:flex; }
+.rnp-anim-box { background:#fff; border-radius:var(--radius); box-shadow:var(--shadow); padding: 34px 23px 32px; min-width: 180px; text-align: center;}
+.rnp-anim-name { font-size:2.1rem; font-weight:700; color:var(--accent); margin:0 0 11px; min-width:120px; min-height:33px; letter-spacing:1.5px; transition:opacity .16s;}
 </style>
 
 <div class="rnp-wrap">
@@ -72,7 +78,8 @@ body { background: var(--bg); color: var(--primary); font-family: 'Segoe UI',Ari
     <button onclick="rnpClearAll()" class="rnp-clear" title="Clear All">✕</button>
     <input type="file" id="rnp-import" accept=".txt" style="display:none" onchange="rnpImportNames(event)">
   </div>
-  <button class="rnp-big" onclick="rnpPickName()">Pick Random Name</button>
+  <div id="rnp-winner-sticky" class="rnp-winner-sticky"></div>
+  <button class="rnp-big" id="rnp-pick-btn" onclick="rnpPickName()">Pick Random Name</button>
   <div class="rnp-stat">
     <div>Total: <span id="rnp-total">0</span></div>
     <div>Selected: <span id="rnp-selected">0</span></div>
@@ -85,17 +92,19 @@ body { background: var(--bg); color: var(--primary); font-family: 'Segoe UI',Ari
   <div id="rnp-msg" class="rnp-msg" style="display:none"></div>
 </div>
 
-<!-- Overlay Animation -->
+<!-- Overlay Animation with Dot Loader -->
 <div id="rnp-overlay" class="rnp-overlay">
-  <div>
-    <div class="rnp-anim" id="rnp-anim"></div>
-    <div class="rnp-winner" id="rnp-winner" style="display:none"></div>
+  <div class="rnp-anim-box">
+    <div class="rnp-dot-loader">
+      <span></span><span></span><span></span>
+    </div>
+    <div class="rnp-anim-name" id="rnp-anim-name"></div>
   </div>
 </div>
 
 <script>
 let rnpNames = [], rnpNamesOrig = [], rnpWinners = [], rnpLastWinner = [];
-let rnpMsgTimeout;
+let rnpMsgTimeout, rnpRolling = false, rnpLoading = null;
 
 function rnpUpdatePlaceholder() {
   let sep = document.getElementById('rnp-sep').value, t = document.getElementById('rnp-input');
@@ -112,10 +121,12 @@ function rnpSetNames() {
   localStorage.setItem('rnpNames',JSON.stringify(set));
   rnpUpdate();
   rnpMsg('Name list updated!','success');
+  rnpShowStickyWinner();
 }
 function rnpResetNames() {
   rnpNames = [...rnpNamesOrig]; rnpWinners = [];
   rnpUpdate(); rnpMsg('Reset!','success');
+  rnpShowStickyWinner();
 }
 function rnpShuffleNames() {
   rnpNames = [...rnpNamesOrig].sort(()=>Math.random()-.5);
@@ -145,6 +156,7 @@ function rnpClearAll() {
     rnpUpdatePlaceholder();
     rnpUpdate();
     rnpMsg('All cleared!','success');
+    rnpShowStickyWinner();
   }
 }
 function rnpMsg(txt, type) {
@@ -171,52 +183,59 @@ function rnpSearchNames() {
   rnpRenderWinners(q);
 }
 function rnpPickName() {
+  if(rnpRolling) return; // Prevent double rolling
   let n = parseInt(document.getElementById('rnp-winners').value);
   if(!rnpNames.length) return rnpMsg('No names!','error');
   if(n>rnpNames.length) return rnpMsg('Not enough names!','error');
-  rnpRunAnimation(n);
+  rnpRunDotLoader(n);
 }
-function rnpRunAnimation(count) {
+function rnpRunDotLoader(count) {
   let overlay = document.getElementById('rnp-overlay'),
-      anim = document.getElementById('rnp-anim'),
-      winnerDiv = document.getElementById('rnp-winner');
+      animName = document.getElementById('rnp-anim-name');
   overlay.classList.add('active');
-  winnerDiv.style.display="none";
-  anim.style.display="flex";
+  animName.textContent = '';
+  rnpRolling = true;
   let dur = Math.max(1,Math.min(6,parseInt(document.getElementById('rnp-dur').value)||2));
-  let t0 = Date.now(), rolling;
-  // Rolling animation
-  rolling = setInterval(()=>{
-    anim.textContent = rnpNamesOrig[Math.floor(Math.random()*rnpNamesOrig.length)] || '';
-    anim.style.fontSize = 26+Math.floor(Math.random()*28)+'px';
-  }, 62);
-  setTimeout(()=>{
-    clearInterval(rolling);
-    // Pick actual winners!
-    let localNames = [...rnpNames];
-    let winners = [];
-    for(let i=0; i<count; i++) {
-      let idx = Math.floor(Math.random()*localNames.length);
-      winners.push(localNames.splice(idx,1)[0]);
-    }
-    // Actually remove them from pool
-    for(let w of winners) rnpNames.splice(rnpNames.indexOf(w),1);
-    rnpWinners.push(...winners);
-    rnpLastWinner = winners;
-    // Show winner(s)
-    anim.style.display="none";
-    winnerDiv.style.display="block";
-    winnerDiv.textContent = winners.length>1 ? "Winners: "+winners.join(", ") : "Winner: "+winners[0];
+  let tick = 0, namesPool = rnpNamesOrig, totalTicks = Math.ceil(dur*1000/90), i = 0;
+  if(rnpLoading) clearInterval(rnpLoading);
+  rnpLoading = setInterval(()=>{
+    animName.style.opacity = 0.5;
     setTimeout(()=>{
-      overlay.classList.remove('active');
-      rnpUpdate();
-      // highlight new winner(s) for a moment
-      setTimeout(()=>{ rnpLastWinner=[]; rnpRenderWinners(); }, 1100);
-    }, 1300);
-  }, dur*1000);
+      animName.textContent = namesPool[Math.floor(Math.random()*namesPool.length)] || '';
+      animName.style.opacity = 1;
+    }, 40);
+    i++;
+    if(i>totalTicks) {
+      clearInterval(rnpLoading);
+      // Pick winner(s)
+      let localNames = [...rnpNames];
+      let winners = [];
+      for(let j=0; j<count; j++) {
+        let idx = Math.floor(Math.random()*localNames.length);
+        winners.push(localNames.splice(idx,1)[0]);
+      }
+      for(let w of winners) rnpNames.splice(rnpNames.indexOf(w),1);
+      rnpWinners.push(...winners);
+      rnpLastWinner = winners;
+      animName.textContent = winners.length>1 ? winners.join(", ") : winners[0];
+      animName.style.opacity = 1;
+      rnpRolling = false;
+      // Show winner sticky and update list
+      setTimeout(()=>{
+        overlay.classList.remove('active');
+        rnpUpdate();
+        rnpShowStickyWinner();
+        setTimeout(()=>{ rnpLastWinner=[]; rnpRenderWinners(); }, 1100);
+      }, 1100);
+    }
+  }, 90);
 }
-
-// Keyboard shortcut: Space to pick
+function rnpShowStickyWinner() {
+  let sticky = document.getElementById('rnp-winner-sticky');
+  if(rnpWinners.length==0) { sticky.innerHTML=''; return; }
+  let last = rnpWinners.slice(-rnpLastWinner.length||-1);
+  sticky.innerHTML = last.length>1 ? `Last Winner:<br><span>${last.join(', ')}</span>` : `Last Winner:<br><span>${last[0]}</span>`;
+}
 document.addEventListener('keydown', function(e){
   if (e.code === 'Space' && !document.activeElement.matches('input,textarea')) {
     e.preventDefault(); rnpPickName();
@@ -230,5 +249,6 @@ window.onload = function() {
     rnpResetNames();
   }
   rnpUpdatePlaceholder();
+  rnpShowStickyWinner();
 };
 </script>
