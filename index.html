@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Random Name Picker</title>
+  <!-- Tailwind CDN for minimal, responsive, modern design -->
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-white min-h-screen flex items-center justify-center py-6 px-2">
+  <main class="w-full max-w-md mx-auto space-y-6">
+    <!-- Logo / App Title -->
+    <header class="mb-4 text-center">
+      <div class="text-indigo-600 font-extrabold text-3xl tracking-tight mb-1 select-none">Random Name Picker</div>
+      <div class="text-gray-400 font-medium text-sm">Sederhana &amp; Responsif</div>
+    </header>
+
+    <!-- Input Section -->
+    <section class="space-y-2">
+      <textarea
+        id="nameList"
+        class="w-full p-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none font-sans text-base transition resize-none"
+        rows="6"
+        placeholder="Masukkan daftar nama, satu per baris..."
+        spellcheck="false"
+      ></textarea>
+      <div class="flex items-center gap-2">
+        <button
+          id="setList"
+          class="bg-indigo-600 text-white font-semibold px-4 py-2 rounded-lg hover:bg-indigo-700 transition"
+        >Setel Daftar</button>
+        <span id="totalNames" class="text-gray-500 ml-2 text-sm">Total nama: 0</span>
+      </div>
+    </section>
+
+    <!-- Picker Section -->
+    <section class="flex items-center gap-2">
+      <label for="winnerCount" class="text-gray-600 text-sm font-medium">Jumlah pemenang</label>
+      <input
+        type="number"
+        id="winnerCount"
+        min="1"
+        value="1"
+        class="w-16 p-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none text-base"
+      />
+      <button
+        id="pickRandom"
+        class="bg-indigo-600 text-white font-semibold px-4 py-2 rounded-lg hover:bg-indigo-700 transition"
+      >Pick Random</button>
+    </section>
+
+    <!-- Winners Display -->
+    <section>
+      <div id="winners"
+        class="min-h-[72px] bg-gray-50 rounded-lg px-4 py-3 text-center space-y-1 text-lg font-semibold text-indigo-700"
+      ></div>
+    </section>
+
+    <!-- Reset & Clear -->
+    <section class="flex gap-2">
+      <button
+        id="reset"
+        class="flex-1 bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition"
+      >Reset</button>
+      <button
+        id="clearAll"
+        class="flex-1 bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition"
+      >Clear All</button>
+    </section>
+
+    <footer class="text-center text-xs text-gray-300 pt-6 select-none">© 2025 Random Name Picker</footer>
+  </main>
+
+  <script>
+    // State
+    let originalNames = [];
+    let currentNames = [];
+
+    // Elements
+    const nameList = document.getElementById('nameList');
+    const setList = document.getElementById('setList');
+    const totalNames = document.getElementById('totalNames');
+    const winnerCount = document.getElementById('winnerCount');
+    const pickRandom = document.getElementById('pickRandom');
+    const winners = document.getElementById('winners');
+    const reset = document.getElementById('reset');
+    const clearAll = document.getElementById('clearAll');
+
+    // Update total names display
+    function updateTotalNames() {
+      totalNames.textContent = "Total nama: " + currentNames.length;
+    }
+
+    // Set List handler
+    setList.onclick = () => {
+      const names = nameList.value
+        .split('\n')
+        .map(n => n.trim())
+        .filter(n => n.length > 0);
+      originalNames = [...names];
+      currentNames = [...names];
+      winners.innerHTML = '';
+      updateTotalNames();
+    };
+
+    // Pick Random handler
+    pickRandom.onclick = () => {
+      const n = parseInt(winnerCount.value, 10) || 1;
+      if (!currentNames.length) {
+        winners.innerHTML = '<span class="text-red-500">Tidak ada nama!</span>';
+        return;
+      }
+      if (n > currentNames.length) {
+        winners.innerHTML = '<span class="text-red-500">Jumlah nama kurang!</span>';
+        return;
+      }
+      // Pick n unique random winners
+      let pool = [...currentNames];
+      let selected = [];
+      for (let i = 0; i < n; i++) {
+        const idx = Math.floor(Math.random() * pool.length);
+        selected.push(pool[idx]);
+        pool.splice(idx, 1);
+      }
+      // Remove winners from remaining names
+      currentNames = pool;
+      winners.innerHTML = selected
+        .map((name, i) => `<div>${i+1}. ${name}</div>`)
+        .join('');
+      updateTotalNames();
+    };
+
+    // Reset button handler
+    reset.onclick = () => {
+      currentNames = [...originalNames];
+      winners.innerHTML = '';
+      updateTotalNames();
+    };
+
+    // Clear All button handler
+    clearAll.onclick = () => {
+      nameList.value = '';
+      originalNames = [];
+      currentNames = [];
+      winners.innerHTML = '';
+      updateTotalNames();
+    };
+
+    // Init
+    updateTotalNames();
+  </script>
+</body>
+</html>
